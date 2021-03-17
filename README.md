@@ -28,6 +28,8 @@
 - Run Container / App
   - docker run -d -p 5000:5000 --name ChatBotRestAPI chatbot-rest-api:1.0
 
+Opening the localhost on port 5000 should open our “not so complex” output. - http://localhost:5000
+
 # Deploying the application to Heroku
 
 Once you have your application running locally, we will start the actual work of deploying it in Heroku.
@@ -41,7 +43,7 @@ You can skip above command, if would like to create application from Heruko GUI
 
 Now it's time to execute application on Heroku - Make sure you are inside the folder where you created the 3 files — app.py, requirements.txt and the almighty Dockerfile.
 
-Execute the below command to create the container onto Heroku - heroku container:push web --app conversational-chatbot-api
+Execute the below command to create the container onto Heroku. - heroku container:push web --app conversational-chatbot-api
 
 You will get the below messages as response which says that the Docker image has been built, tagged and successfully pushed.
 
