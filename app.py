@@ -28,6 +28,38 @@ books = [{
 ]
 
 # Schema For the Book Request JSON
+chatMessageField = {
+    "question": fields.String,
+    "answer": fields.String
+}
+
+# Resource: Individual Book Routes
+
+
+class ChatMessage(Resource):
+    def __init__(self):
+        # Initialize The Flsak Request Parser and add arguments as in an expected request
+        self.reqparse = reqparse.RequestParser()
+
+        self.reqparse.add_argument("question", type=str, location="json")
+        self.reqparse.add_argument("answer", type=str, location="json")
+
+    def post(self):
+        args = self.reqparse.parse_args()
+        print(args)
+        reply = {
+            "question": args["question"],
+            "answer": args["answer"]
+        }
+        print("Reply to sent .... !!!!")
+        print(reply)
+        # return {'Message': reply}
+
+        return{"Predicted Response": marshal(reply, chatMessageField)}
+        # return {"Reply": marshal(chatMessage, reply)}, 201
+
+
+# Schema For the Book Request JSON
 bookFields = {
     "id": fields.Integer,
     "title": fields.String,
@@ -126,6 +158,7 @@ class HelloWorld(Resource):
 
 api.add_resource(HelloWorld, '/')
 
+api.add_resource(ChatMessage, "/predict")
 
 api.add_resource(BookList, "/books")
 api.add_resource(Book, "/books/<int:id>")
