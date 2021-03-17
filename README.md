@@ -41,9 +41,11 @@ It is time to create a new Heroku application. You could either choose a name or
 or - heroku create yourawesomeapp
 You can skip above command, if would like to create application from Heruko GUI
 
-Now it's time to execute application on Heroku - Make sure you are inside the folder where you created the 3 files — app.py, requirements.txt and the almighty Dockerfile.
+Now it's time to execute application on Heroku - Make sure you are inside the folder where you created the 3 files app.py, requirements.txt and the almighty Dockerfile.
 
-Execute the below command to create the container onto Heroku. - heroku container:push web --app conversational-chatbot-api
+Execute the below command to create the container onto Heroku.
+
+    - heroku container:push web --app conversational-chatbot-api
 
 You will get the below messages as response which says that the Docker image has been built, tagged and successfully pushed.
 
