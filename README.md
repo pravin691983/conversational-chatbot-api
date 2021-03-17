@@ -33,12 +33,16 @@ Opening the localhost on port 5000 should open our “not so complex” output. 
 # Deploying the application to Heroku
 
 Once you have your application running locally, we will start the actual work of deploying it in Heroku.
-Login to Heroku container. It would open the browser and prompt you to login with your Heroku credentials if you are not logged in already. - heroku container:login
+Login to Heroku container. It would open the browser and prompt you to login with your Heroku credentials if you are not logged in already.
+
+    - heroku container:login
 
 You would get a message as “Login Succeeded” if everything goes right.
 
-It is time to create a new Heroku application. You could either choose a name or let Heroku create a magic name for your app. - heroku create
-or - heroku create yourawesomeapp
+It is time to create a new Heroku application. You could either choose a name or let Heroku create a magic name for your app.
+
+    - heroku create yourawesomeapp
+
 You can skip above command, if would like to create application from Heruko GUI
 
 Now it's time to execute application on Heroku - Make sure you are inside the folder where you created the 3 files app.py, requirements.txt and the almighty Dockerfile.
