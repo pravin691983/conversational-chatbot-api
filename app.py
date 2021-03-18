@@ -2,6 +2,18 @@ from flask import Flask
 from flask_restful import Resource, Api, reqparse, abort, marshal, fields
 import os
 
+import nltk
+from keras.models import load_model
+import json
+import random
+import tensorflow as tf
+from tensorflow import keras
+import numpy as np
+from pathlib import Path
+from nltk.stem import WordNetLemmatizer
+import json
+import pickle
+
 # Initialize Flask app
 app = Flask(__name__)
 port = int(os.environ.get("PORT", 5000))
@@ -27,6 +39,106 @@ books = [{
 }
 ]
 
+# load the model architecture
+
+intents = json.loads(open('./intents.json').read())
+words = pickle.load(open('./words.pkl', 'rb'))
+classes = pickle.load(open('./classes.pkl', 'rb'))
+
+# Download wordnet & punkt
+nltk.download('punkt')
+nltk.download('wordnet')
+
+# Initilise Data
+lemmatizer = WordNetLemmatizer()
+
+
+def loadRetrivalModal():
+    with open('./RetrievalBased_ChatBot_model.json', 'r') as json_file:
+        json_savedModel = json_file.read()
+
+    # load the model architecture
+    model_retrieval_based = tf.keras.models.model_from_json(json_savedModel)
+
+    my_file = Path('./RetrievalBased_ChatBot_weights.hdf5')
+
+    if my_file.is_file():
+        # file exists
+        model_retrieval_based.load_weights(
+            './RetrievalBased_ChatBot_weights.hdf5')
+
+    return model_retrieval_based
+
+
+def clean_up_sentence(sentence):
+    # tokenize the pattern - split words into array
+    sentence_words = nltk.word_tokenize(sentence)
+    # stem each word - create short form for word
+    sentence_words = [lemmatizer.lemmatize(
+        word.lower()) for word in sentence_words]
+    # print(sentence_words)
+    return sentence_words
+
+
+def bow(sentence, words, show_details=True):
+    # tokenize the pattern
+    sentence_words = clean_up_sentence(sentence)
+    # bag of words - matrix of N words, vocabulary matrix
+    bag = [0]*len(words)
+    for s in sentence_words:
+        for i, w in enumerate(words):
+            if w == s:
+                # assign 1 if current word is in the vocabulary position
+                bag[i] = 1
+                if show_details:
+                    print("found in bag: %s" % w)
+    return(np.array(bag))
+
+
+def predict_class(sentence, model):
+    # filter out predictions below a threshold
+    p = bow(sentence, words, show_details=False)
+    res = model.predict(np.array([p]))[0]
+    ERROR_THRESHOLD = 0.25
+    results = [[i, r] for i, r in enumerate(res) if r > ERROR_THRESHOLD]
+    # sort by strength of probability
+    results.sort(key=lambda x: x[1], reverse=True)
+    return_list = []
+    for r in results:
+        return_list.append({"intent": classes[r[0]], "probability": str(r[1])})
+    return return_list
+
+
+def getResponse(ints, intents_json):
+    list_of_intents = intents_json['intents']
+
+    if ints:
+        tag = ints[0]['intent']
+        # print('List of intents :', list_of_intents)
+        for i in list_of_intents:
+            if(i['tag'] == tag):
+                result = random.choice(i['responses'])
+                break
+    else:
+        for i in list_of_intents:
+            if(i['tag'] == 'noanswer'):
+                result = random.choice(i['responses'])
+                break
+
+    # print('getResponse result :', result)
+    return result
+
+
+def chatbot_response(msg, model_retrieval_based):
+    ints = predict_class(msg, model_retrieval_based)
+    # print('predict_class response : ',ints)
+    res = getResponse(ints, intents)
+    return res
+
+
+# Load model
+model_retrieval_based = loadRetrivalModal()
+
 # Schema For the Book Request JSON
 chatMessageField = {
     "question": fields.String,
@@ -49,7 +161,7 @@ class ChatMessage(Resource):
         print(args)
         reply = {
             "question": args["question"],
-            "answer": args["answer"]
+            "answer": chatbot_response(args["question"], model_retrieval_based)
         }
         print("Reply to sent .... !!!!")
         print(reply)

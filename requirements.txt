@@ -1,2 +1,6 @@
+# production requirements
 Flask==0.10.1
 Flask-RESTful==0.3.1
+numpy==1.18.0
+pandas==0.16
+keras==2.0
