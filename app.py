@@ -13,6 +13,8 @@ from pathlib import Path
 from nltk.stem import WordNetLemmatizer
 import json
 import pickle
+from tensorflow.keras import preprocessing
+
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -41,9 +43,9 @@ books = [{
 
 # load the model architecture
 
-intents = json.loads(open('./intents.json').read())
-words = pickle.load(open('./words.pkl', 'rb'))
-classes = pickle.load(open('./classes.pkl', 'rb'))
+intents = json.loads(open('./modal_retrieval/intents.json').read())
+words = pickle.load(open('./modal_retrieval/words.pkl', 'rb'))
+classes = pickle.load(open('./modal_retrieval/classes.pkl', 'rb'))
 
 # Download wordnet & punkt
 nltk.download('punkt')
@@ -52,20 +54,157 @@ nltk.download('wordnet')
 # Initilise Data
 lemmatizer = WordNetLemmatizer()
 
+# # Load Generative model
+
+
+# def loadGenerativeModal():
+#     with open('./modal_generative/ContentBase_ChatBot_model.json', 'r') as json_file:
+#         json_savedModel = json_file.read()
+
+#     # load the model architecture
+#     model_content_based = tf.keras.models.model_from_json(json_savedModel)
+#     model_content_based.load_weights(
+#         './modal_generative/ContentBase_ChatBot_weights.hdf5')
+
+#     return model_content_based
+
+
+# model_content_based = loadGenerativeModal()
+# # encoder_inputs
+# # encoder_states
+
+# # Tokenize questions & answers
+# tokenizer = preprocessing.text.Tokenizer()
+# maxlen_answers = 100
+# maxlen_questions = 100
+
+
+# def make_inference_models():
+
+#     # Dimension for embedding layer
+#     embedding_dimension = 200
+
+#     # Dimensionality
+#     dimensionality = 200  # 256
+
+#     VOCAB_SIZE = 10000
+
+#     encoder_inputs = tf.keras.layers.Input(shape=(maxlen_questions, ))
+#     encoder_embedding = tf.keras.layers.Embedding(
+#         VOCAB_SIZE, embedding_dimension, mask_zero=True)(encoder_inputs)
+#     encoder_outputs, state_h, state_c = tf.keras.layers.LSTM(
+#         dimensionality, return_state=True)(encoder_embedding)
+#     encoder_states = [state_h, state_c]
+
+#     # first build an encoder model with encoder inputs and encoder output states.
+#     # first build an encoder model with encoder inputs and encoder output states.
+#     # encoder_inputs = model_content_based.input[0]
+#     # encoder_outputs, state_h_enc, state_c_enc = model_content_based.layers[2].output
+
+#     # encoder_states = [state_h_enc, state_c_enc]
+#     encoder_model = tf.keras.models.Model(encoder_inputs, encoder_states)
+
+#     # create placeholders for decoder input states
+#     decoder_state_input_h = tf.keras.layers.Input(shape=(200,))
+#     decoder_state_input_c = tf.keras.layers.Input(shape=(200,))
+#     decoder_states_inputs = [decoder_state_input_h, decoder_state_input_c]
+
+#     # create new decoder states and outputs with the help of decoder LSTM and Dense layer that we trained earlier.
+#     decoder_inputs = tf.keras.layers.Input(shape=(maxlen_answers,))
+#     decoder_embedding = tf.keras.layers.Embedding(
+#         VOCAB_SIZE, embedding_dimension, mask_zero=True)(decoder_inputs)
+#     decoder_lstm = tf.keras.layers.LSTM(
+#         dimensionality, return_state=True, return_sequences=True)
+#     decoder_dense = tf.keras.layers.Dense(
+#         VOCAB_SIZE, activation=tf.keras.activations.softmax)
+
+#     decoder_outputs, state_h, state_c = decoder_lstm(
+#         decoder_embedding, initial_state=decoder_states_inputs)
+#     decoder_states = [state_h, state_c]
+#     decoder_outputs = decoder_dense(decoder_outputs)
+#     decoder_model = tf.keras.models.Model(
+#         [decoder_inputs] + decoder_states_inputs,
+#         [decoder_outputs] + decoder_states)
+
+#     return encoder_model, decoder_model
+
+
+# def str_to_tokens(sentence: str):
+#     print("maxlen_questions", maxlen_questions)
+#     print("tokenizer", tokenizer)
+#     print("tokenizer.word_index", tokenizer.word_index)
+#     words = sentence.lower().split()
+#     # print("words", words)
+#     tokens_list = list()
+#     # print("Before tokens_list", tokens_list)
+#     for word in words:
+#         if word in tokenizer.word_index:
+#             # print("tokenizer word", tokenizer.word_index[ word ])
+#             tokens_list.append(tokenizer.word_index[word])
+#         else:
+#             tokens_list.append(tokenizer.word_index["out"])
+#         # print("After tokens_list", tokens_list)
+#     return preprocessing.sequence.pad_sequences([tokens_list], maxlen=maxlen_questions, padding='post')
+
+# # predict response for generative modal
+
+
+# enc_model, dec_model = make_inference_models()
+
+
+# def predictResponseUsingGenerativeModal(query):
+#     states_values = enc_model.predict(str_to_tokens(request))
+#     empty_target_seq = np.zeros((1, 1))
+#     empty_target_seq[0, 0] = tokenizer.word_index['start']
+#     stop_condition = False
+#     decoded_translation = ''
+
+#     while not stop_condition:
+#         dec_outputs, h, c = dec_model.predict(
+#             [empty_target_seq] + states_values)
+#         sampled_word_index = np.argmax(dec_outputs[0, -1, :])
+
+#         # print("sampled_word_index", sampled_word_index)
+#         if sampled_word_index == 1:
+#             # print('Got end tag: Bye')
+#             stop_condition = True
+#             break
+
+#         sampled_word = None
+#         for word, index in tokenizer.word_index.items():
+#             if sampled_word_index == index:
+#                 # print("word", word)
+#                 decoded_translation += ' {}'.format(word)
+#                 sampled_word = word
+
+#         if sampled_word == 'end' or len(decoded_translation.split()) > maxlen_answers:
+#             stop_condition = True
+
+#         empty_target_seq = np.zeros((1, 1))
+#         empty_target_seq[0, 0] = sampled_word_index
+#         states_values = [h, c]
+
+#         # Print Respone
+#         print(decoded_translation)
+
+#         return decoded_translation
+
+# # Load Retrival Modal
+
 
 def loadRetrivalModal():
-    with open('./RetrievalBased_ChatBot_model.json', 'r') as json_file:
+    with open('./modal_retrieval/RetrievalBased_ChatBot_model.json', 'r') as json_file:
         json_savedModel = json_file.read()
 
     # load the model architecture
     model_retrieval_based = tf.keras.models.model_from_json(json_savedModel)
 
-    my_file = Path('./RetrievalBased_ChatBot_weights.hdf5')
+    my_file = Path('./modal_retrieval/RetrievalBased_ChatBot_weights.hdf5')
 
     if my_file.is_file():
         # file exists
         model_retrieval_based.load_weights(
-            './RetrievalBased_ChatBot_weights.hdf5')
+            './modal_retrieval/RetrievalBased_ChatBot_weights.hdf5')
 
     return model_retrieval_based
 
@@ -131,7 +270,7 @@ def getResponse(ints, intents_json):
 
 def chatbot_response(msg, model_retrieval_based):
     ints = predict_class(msg, model_retrieval_based)
-    # print('predict_class response : ',ints)
+    print('predict_class response : ', ints)
     res = getResponse(ints, intents)
     return res
 
@@ -280,6 +419,7 @@ def home():
 def get_bot_response():
     userText = request.args.get('msg')
     predicatedResponse = chatbot_response(userText, model_retrieval_based)
+    # predicatedResponse = predictResponseUsingGenerativeModal("Hello")
     # return str(englishBot.get_response(userText))
     return predicatedResponse
 

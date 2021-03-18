@@ -1,5 +1,33 @@
 <!DOCTYPE html>
 <html>
+    <style>
+        body {
+        margin-bottom: 200%;
+        }
+        .scroll {
+        border: none;
+        padding: 5px;
+        font: 24px/36px sans-serif;
+        /* width: 200px; */
+        height: 400px;
+        overflow: scroll;
+        }
+        ::-webkit-scrollbar {
+        width: 12px;
+        height: 12px;
+        }
+        ::-webkit-scrollbar-track {
+        border: 1px solid yellowgreen;
+        border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+        background: yellowgreen;
+        border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+        background: #88ba1c;
+        }
+        </style>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -14,13 +42,16 @@
 <div class="container">
     <div class="row">
         <div class="col-sm-6 offset-sm-3">
+            <div class="scroll">
             <div id="chatbox" class="border border-success">
                 <p class="botText"><span>Let me know how can I help you?</span></p>
             </div>
+        </div>
             <div id="userInput">
                 <input id="textInput" class="form-control" type="text" name="msg" placeholder="Type Your Message Here">
                 <input id="buttonInput" class="btn btn-success form-control" type="submit" value="Send">
             </div>
+        
         </div>
     </div>
 <script>
@@ -31,11 +62,11 @@
         $("#chatbox").append(userHtml);
         document.getElementById('userInput').scrollIntoView({block: 'start', behavior: 'smooth'});
         $.get("/get", { msg: userText }).done(function(data) {
-        var botHtml = '<p class="botText"><span>' + data + '</span></p>';
-        $("#chatbox").append(botHtml);
-        document.getElementById('userInput').scrollIntoView({block: 'start', behavior: 'smooth'});
-});
-}
+            var botHtml = '<p class="botText"><span>' + data + '</span></p>';
+            $("#chatbox").append(botHtml);
+            document.getElementById('userInput').scrollIntoView({block: 'start', behavior: 'smooth'});
+        });
+    }
     $("#textInput").keypress(function(e) {
     //if enter key is pressed
         if(e.which == 13) {
