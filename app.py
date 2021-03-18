@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template, request
 from flask_restful import Resource, Api, reqparse, abort, marshal, fields
 import os
 
@@ -265,10 +265,24 @@ class BookList(Resource):
 
 class HelloWorld(Resource):
     def get(self):
-        return {'Message': 'Welcome to ChatBot REST API'}
+        # return {'Message': 'Welcome to ChatBot REST API'}
+        return render_template("index.html")
 
 
-api.add_resource(HelloWorld, '/')
+# api.add_resource(HelloWorld, '/')
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+
+@app.route("/get")
+# function for the bot response
+def get_bot_response():
+    userText = request.args.get('msg')
+    predicatedResponse = chatbot_response(userText, model_retrieval_based)
+    # return str(englishBot.get_response(userText))
+    return predicatedResponse
+
 
 api.add_resource(ChatMessage, "/predict")
 
